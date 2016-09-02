@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="fr">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15" />
+    <style type="text/css">
+body {
+    padding-bottom: 100px;
+}
+    </style>
+    <title>Corewar2 - README</title>
+  </head>
+  <body>
+    <h1>Corewar2</h1>
+
+    <h2>Sommaire</h2>
+    <ul>
+      <li><a href="#intro">Introduction</a></li>
+      <li><a href="#corewar">Corewar</a></li>
+      <li><a href="#langage">Langage <acronym title="CoreWar Assembly">CWA</acronym></a></li>
+      <li><a href="#regles">Règles</a></li>
+      <li><a href="#exemples">Exemples</a></li>
+    </ul>
+
+    <h2 id="intro">Introduction</h2>
+    <p>Corewar2 est un corewar très simple, programmé en C++ en utilisant <a href="http://qt.nokia.com/">Qt</a>. Le langage utilisé a été inventé par moi-même pour l'occasion et baptisé CWA (pour CoreWar Assembly). Il s'agit d'un langage assembleur très simple, comportant 7 instructions.</p>
+
+    <h2 id="corewar">Corewar</h2>
+    <p>Le principe de Corewar est simple : il s'agit de faire s'affronter des programmes dans une mémoire virtuelle. Le dernier programme en fonctionnement gagne ; on peut faire planter l'un des autres programmes en lui faisant exécuter une instruction invalide (pour cela, il suffit d'écraser son code).</p>
+
+    <h2 id="langage">Langage <acronym title="CoreWar Assembly">CWA</acronym></h2>
+    <p>Les programmes sont des fichiers CWA, ils sont compilés et placés dans la mémoire au début de la partie. Afin de simplifier, la mémoire est un tableau de "cases", chacune pouvant contenir une donnée (un nombre) ou une instruction de programme. Ces instructions s'exécutent successivement, une par programme à chaque tour. Elle est cyclique, c'est à dire qu'elle n'a ni début ni fin ; en débordant d'un côté on revient de l'autre.</p>
+    <p>Les fichiers CWA contiennent une instruction par ligne, les commentaires commencent par un point-virgule ';'. Chaque instruction est soit de la forme <code>DAT &lt;val1&gt;</code>, soit de la forme <code>&lt;INSTR&gt; &amp;&lt;val1&gt; &amp;&lt;val2&gt;</code> où <code>val1</code> et <code>val2</code> sont des nombres et <code>&amp;</code> l'un des caractères <code>#</code> (dièse), <code>$</code> (dollar) ou <code>@</code> (arobase) qui correspondent aux différents modes d'adressage. Il n'y a pas de registre, toutes les données se trouvent dans la mémoire.</p>
+    <p>Les opérandes peuvent être de trois types ; elles sont notées par un caractère de préfixe puis un nombre (positif ou négatif). Ces préfixes signifient :</p>
+    <ul>
+      <li><code>$</code> : valeur immédiate. La valeur à utiliser est la valeur du nombre (évalué en base 10). Exemple : <code>$-12</code></li>
+      <li><code>#</code> : adresse. La valeur à utiliser est celle se trouvant à l'adresse donnée par le nombre, relativement à l'instruction courante. Ainsi <code>#0</code> réfère à l'instruction courante, <code>#-1</code> à celle immédiatement avant, etc.</li>
+      <li><code>@</code> : déréférence. La valeur à utiliser se trouve à l'adresse qui se trouve à l'adresse donnée par le nombre. Notez que la seconde adresse est également relative à l'instruction courante, et non pas à sa position. Ainsi, <code>@1 ; DAT 3 ; DAT 3 ; DAT 4</code> référence la case contenant le <code>DAT 4</code></li>
+    </ul>
+    <p>Les instructions peuvent prendre une ou deux opérandes. Tous les types ne sont cependant pas forcément acceptés, par exemple <code>JMP</code> prend forcément une adresse (pas de valeur immédiate), de même que la destination des commandes <code>MOV</code>, <code>ADD</code> et <code>SUB</code>. Les instructions sont :</p>
+    <ul>
+      <li><code>DAT &lt;nombre&gt;</code> : Une valeur numérique. Si le programme arrive à une case contenant un <code>DAT</code>, il est éliminé. Notez que <code>nombre</code> ne doit pas avoir de préfixe.</li>
+      <li><code>ADD &lt;src&gt; &lt;dst&gt;</code> : Ajoute <code>src</code> à <code>dst</code>. <code>dst</code> ne peut pas être une valeur immédiate.</li>
+      <li><code>SUB &lt;src&gt; &lt;dst&gt;</code> : Retranche <code>src</code> à <code>dst</code>. <code>dst</code> ne peut pas être une valeur immédiate.</li>
+      <li><code>MOV &lt;src&gt; &lt;dst&gt;</code> : Copie de <code>src</code> vers <code>dst</code>. Cette instruction peut copier indifféremment des valeurs ou des instructions. <code>dst</code> ne peut pas être une valeur immédiate.</li>
+      <li><code>IFE &lt;a&gt; &lt;b&gt;</code> : Compare <code>a</code> à <code>b</code>. Si <code>a</code> est égale à <code>b</code>, la prochaine instruction est exécutée, sinon elle est sautée.</li>
+      <li><code>IFL &lt;src&gt; &lt;dst&gt;</code> : Compare <code>a</code> à <code>b</code>. Si <code>a &lt; b</code>, la prochaine instruction est exécutée, sinon elle est sautée.</li>
+      <li><code>JMP &lt;dst&gt;</code> : Saute à l'adresse de <code>dst</code>. <code>dst</code> ne peut pas être une valeur immédiate.</li>
+      <li><code>FORK &lt;dst&gt;</coed> : Crée un autre thread, qui s'exécute à l'adresse de <code>dst</code>, alors que celui-ci continue à l'instruction suivante.</li>
+    </ul>
+
+    <h2 id="regles">Règles</h2>
+    <p>Un programme est arrêté immédiatement s'il exécute une instruction invalide (par exemple un <code>DAT</code>, où une instruction contenant un type d'opérande incorrect). De plus, une case mémoire est considérée appartenir au programme qui l'a écrite en dernier ; si un programme exécute une case mémoire qui ne lui appartient pas, il est considéré comme étant le programme qui l'a écrite. Cela signifie que si tous les programmes restant exécutent du code de votre programme, vous avez également remporté la partie.</p>
+    <p>Si l'instruction <code>FORK</code> est activée, elle permet à un programme de créer plusieurs threads ; attention cependant, les threads se partagent le temps d'exécution du processus qui les crée. Ainsi pour un processus ayant 3 threads, chacun de ses threads s'exécutent moins vite que le thread d'un processus n'utilisant pas l'instruction <code>FORK</code>.</p>
+
+    <h2 id="exemples">Exemples</h2>
+
+    <h3>Rouleau-compresseur</h3>
+    <p>Le rouleau-compresseur est le plus simple programme possible. Il ne contient qu'une seule instruction, qui se contente de recopier cette instruction dans la case mémoire suivante. Il ne fait donc pas planter les autres programmes ; une fois atteints par le rouleau-compresseur, ils exécutent eux-aussi cette ligne de code (ce qui ne cause pas le rouleau à se déplacer plus vite). Ecrite en CWA, cette ligne donne :</p>
+    <pre>mov #0 #1 ; rouleau compresseur</pre>
+
+    <h3>Bombeur</h3>
+    <p>Cet exemple, un peu plus complet, boucle afin d'écrire des <code>DAT 0</code> dans toute la mémoire qui le suit.</p>
+<pre>add $1 #3 ; incrémente le compteur
+mov $0 @2 ; écrit un DAT 0 à l'adresse pointée par le compteur
+jmp #-2   ; retour au début
+dat 2     ; compteur</pre>
+
+    <h3>Anti-compresseur</h3>
+    <p>Ce code ne fait que contrer les rouleaux-compresseurs, il n'attaque donc pas. Il place un <code>DAT 1</code> un peu en arrière, et vérifie sa présence. Lorsqu'il a été écrasé, il tue le rouleau-compresseur qui en est à-priori responsable en l'écrasant avec un <code>DAT 0</code> :</p>
+<pre>mov $1 #-4 ; place le DAT 1 témoin
+ife $1 #-5 ; vérifie la présence du témoin
+jmp #-1    ; s'il est présent : retourne à la ligne de vérification
+mov $0 #-5 ; s'il a été écrasé, on envoie deux DAT 0 pour tuer le compresseur
+mov $0 #-6
+jmp #-5    ; puis on retourne au début</pre>
+
+    <h3>Spammeur</h3>
+    <p>Pour cet exemple, l'instruction <code>FORK</code> doit être activée. Ce bout de code envoie des rouleaux-compresseurs à différents endroits de la mémoire ; il risque cependant de s'écraser lui-même :
+    <pre>add $128 #5 ; incrémente les compteurs
+add $128 #5
+mov #5 @3   ; copie le rouleau-compresseur
+fork @3     ; exécute le compresseur
+jmp #-4     ; boucle
+dat 4
+dat 3
+mov #0 #1   ; code du rouleau-compresseur</pre>
+  </body>
+</html>

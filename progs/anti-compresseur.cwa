@@ -1,0 +1,9 @@
+mov $1 #-3 ; place le DAT 1 témoin
+ife $1 #-4 ; vérifie la présence du témoin
+jmp #-1    ; s'il est présent, continue à vérifier
+mov $0 #-4 ; s'il a été écrasé, on bombarde avec des DAT 0 pour tuer le rouleau
+mov $0 #-5 ; qui en est probablement responsable.
+mov $0 #-6 ; on bombarde à répétition car on peut avoir un retard comme la
+mov $0 #-7 ; détection utilise deux instructions, et à cause des FORK le rouleau
+mov $0 #-8 ; peut se déplacer lentement
+jmp #-8    ; puis on retourne au début (on place un nouveau témoin)

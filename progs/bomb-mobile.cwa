@@ -1,0 +1,10 @@
+mov $-2 #8 ; debut: source = debut
+mov $60 #8 ; cible = 60
+mov @6 @7  ; copie: *cible = *source
+add $1 #5  ; source++
+add $1 #5  ; cible++
+ife #3 $6  ; if(source == 6)
+jmp #56    ;     goto 60
+jmp #-5    ; goto copie
+; source
+; cible
